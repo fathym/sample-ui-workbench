@@ -25,7 +25,7 @@
  *
  * @module
  */
-import { WebMode, Workbench } from '@fathym/fai/workbenches';
+import { WebMode, Workbench, type WorkbenchBuilder } from '@fathym/fai/workbenches';
 
 /**
  * Home route — links to /products.
@@ -157,8 +157,10 @@ function serve(req: Request): Response | Promise<Response> {
   return new Response('Not Found', { status: 404 });
 }
 
-export default Workbench(
+const workbench: WorkbenchBuilder = Workbench(
   'ui-sample',
   'Track 6 Phase 10 sample workbench demonstrating WebMode + Consumes.',
 )
   .Modes({ Web: WebMode({ handler: serve }) });
+
+export default workbench;
