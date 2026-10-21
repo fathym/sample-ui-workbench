@@ -161,6 +161,7 @@ const workbench: WorkbenchBuilder = Workbench(
   'ui-sample',
   'Track 6 Phase 10 sample workbench demonstrating WebMode + Consumes.',
 )
-  .Modes({ Web: WebMode({ handler: serve }) });
+  // The port Web mode serves on (its `Port` default, 4969), so OpenX knows where to send requests.
+  .Modes({ Web: WebMode({ handler: serve }).Ports(4969) });
 
 export default workbench;
