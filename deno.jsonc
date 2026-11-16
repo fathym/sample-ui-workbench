@@ -13,10 +13,10 @@
     "build:check": "deno check **/*.ts",
     "build:fmt": "deno fmt",
     "build:lint": "deno lint",
-    "version": "deno run -A jsr:@fathym/common@0.2.325/build/version"
+    "version": "deno run -A jsr:@fathym/common@0.2.348/build/version"
   },
   "imports": {
-    "@fathym/fai/workbenches": "jsr:@fathym/fai@0.0.890-round-10/workbenches",
+    "@fathym/fai/workbenches": "jsr:@fathym/fai@0.0.1005/workbenches",
     "zod": "npm:zod@4.1.13"
   },
   "compilerOptions": {
