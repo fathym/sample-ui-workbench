@@ -10,12 +10,12 @@
  *
  * 1. **WebMode** (D.10.1) — hosts an author-authored HTTP server. The
  *    `serve` function below is passed to `WebMode({ handler: serve })` and
- *    OpenX runs it in a Container App at
- *    `{workspace-origin}/oi-api/workbenches/{APISlug}/Web/`.
+ *    OpenX runs it in a Container App at the Web mode's own Azure address,
+ *    which the workbench's Hosting tab lists.
  *
  * 2. **Consumes primitive** (D.10.2–D.10.6) — a workbench declares
  *    dependencies on other workspace workbenches; the SOP injects each
- *    dependency's proxied URL as a `WB_CONSUMED_${alias}_URL` env var.
+ *    dependency's in-environment address as a `WB_CONSUMED_${alias}_URL` env var.
  *    This sample reads `WB_CONSUMED_products_URL` (populated when the
  *    workspace admin declares Consumes on Phase 9's `api-workbench` at
  *    mode `API`, alias `products`).
@@ -62,10 +62,10 @@ function renderHome(): Response {
  * Products route — fetches from the consumed api-workbench and renders.
  *
  * Reads:
- * - `WB_CONSUMED_products_URL` — proxied URL for the API-mode container
- *   (populated by SOP D.10.4 when Consumes is declared)
- * - `FATHYM_OX_SERVICE_JWT` — service JWT for outbound proxy auth (see
- *   README caveat)
+ * - `WB_CONSUMED_products_URL` — the API-mode container's in-environment
+ *   address (populated by SOP D.10.4 when Consumes is declared)
+ * - `FATHYM_OX_SERVICE_JWT` — an optional bearer the target's own sign-in
+ *   accepts (see the README's "Outbound token")
  */
 async function renderProducts(): Promise<Response> {
   const productsUrl = Deno.env.get('WB_CONSUMED_products_URL');

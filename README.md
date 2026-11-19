@@ -8,9 +8,9 @@ Sibling to [`sample-api-workbench`](https://github.com/fathym/sample-api-workben
 
 Two Phase 10 primitives landing together in one sample:
 
-1. **WebMode** (Phase 10 D.10.1) — the author writes a `serve(req)` fetch function and hands it to `WebMode({ handler: serve })`. OpenX runs it in a Container App at `{workspace-origin}/oi-api/workbenches/{APISlug}/Web/` — browser reaches the routes below directly.
+1. **WebMode** (Phase 10 D.10.1) — the author writes a `serve(req)` fetch function and hands it to `WebMode({ handler: serve })`. OpenX runs it in a Container App at the Web mode's own Azure address, `https://{mode address}/` (the workbench's **Hosting** tab lists it) — browser reaches the routes below directly.
 
-2. **Consumes primitive** (Phase 10 D.10.2–D.10.6) — the workbench declares a dependency on Phase 9's `api-workbench`, and OpenX injects that dependency's proxied URL as a `WB_CONSUMED_${alias}_URL` env var at deploy. The consumer reads it and calls back through the workspace proxy.
+2. **Consumes primitive** (Phase 10 D.10.2–D.10.6) — the workbench declares a dependency on Phase 9's `api-workbench`, and OpenX injects that dependency's address inside your Azure (its in-environment address) as a `WB_CONSUMED_${alias}_URL` env var at deploy. The consumer reads it and calls the target directly; the call never passes through OpenX.
 
 ## Routes
 
@@ -28,22 +28,15 @@ Two Phase 10 primitives landing together in one sample:
    - **Hosting** tab: APISlug `ui-sample`
    - **Consumes** tab (Phase 10 D.10.6): add row `Workbench: api-sample`, `Mode: API`, `As: products`
    - **Modes** tab (after first deploy): enable `Web`
-3. Deploy. Once `HostingStatus` is `Running`, browse to:
+3. Deploy. Once `HostingStatus` is `Running`, the **Hosting** tab lists the Web mode's own address. Browse to:
    ```
-   {workspace-origin}/oi-api/workbenches/ui-sample/Web/
+   https://{mode address}/
    ```
    You should see the home page. Click `/products` to see the response from api-workbench.
 
-## Service JWT caveat (post-D.10.8 follow-up)
+## Outbound token
 
-The `/products` route reads `Deno.env.get('FATHYM_OX_SERVICE_JWT')` to authenticate its outbound call to the workspace proxy. This env var is **not yet injected by the SOP** — Phase 10 shipped the `WB_CONSUMED_*_URL` env vars but left service-JWT injection as a follow-up (workbench containers currently have no built-in identity for calling back into the workspace).
-
-**Workarounds until service-JWT injection lands:**
-
-- **Manual per-workbench JWT**: paste a short-lived JWT into the workbench's `Details.Env` in the inspector under key `FATHYM_OX_SERVICE_JWT`. Rotate manually.
-- **Skip auth entirely**: this sample's `/products` route sends the request without an Authorization header if the env var isn't set. It'll get `401 Unauthorized` from the proxy — you'll see the error rendered in the response. That IS a successful demonstration of the plumbing; only the auth handshake is missing.
-
-Full E2E (including auth) requires a follow-on ticket for service-JWT injection.
+The `/products` route sends `Deno.env.get('FATHYM_OX_SERVICE_JWT')` as a bearer on its call to the consumed workbench, when that value is set. The call goes straight to the target's in-environment address, and the target checks its own callers, so set it (in the workbench's **Environment** tab) to a token the target's sign-in accepts. With it unset the request carries no `Authorization` header, which an open target (Auth **None**) takes as it is.
 
 ## Local run
 
@@ -59,7 +52,7 @@ Or from a clone:
 deno task web
 ```
 
-Either starts a local HTTP server on `http://localhost:4969`. The `/products` route won't reach a real api-workbench in local mode (no proxy) — it'll error on the fetch. Local run is mainly useful for hitting `/` to confirm HTML renders.
+Either starts a local HTTP server on `http://localhost:4969`. The `/products` route won't reach a real api-workbench in local mode (no in-environment address) — it'll error on the fetch. Local run is mainly useful for hitting `/` to confirm HTML renders.
 
 ## Related
 
